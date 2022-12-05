@@ -7,6 +7,7 @@ from datetime import datetime
 thread = None
 thread_lock = Lock()
 
+rule = None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'donsky!'
@@ -14,17 +15,23 @@ socketio = SocketIO(app, cors_allowed_origins='*')
 
 @app.route('/', methods=['GET','POST'])
 def index():
-    
+    rule = '/'
+    thread = socketio.start_background_task(background_thread)
     return render_template('index.html')
 
-def background_thread():
-    print("Generating random sensor values")
-    while True:
-        sensor_value = psutil.cpu_percent()
-        times = psutil.cpu_times_percent().user
-        socketio.emit('updateSensorData', {'value':sensor_value,"date": get_current_datetime()})
-        socketio.emit('cputime', {'val':times, "dt":get_current_datetime()})
 
+@app.route('/cpuTimes', methods=['GET','POST'])
+def cpuTimes():
+    rule = '/cpuTimes'
+    thread = socketio.start_background_task(thread_For_Cpu_times) 
+    return render_template('cpuTimes.html')
+
+def background_thread():
+    
+    while rule == '/':
+        sensor_value = psutil.cpu_percent()
+        print("cpupercent")
+        socketio.emit('updateSensorData', {'value':sensor_value,"date": get_current_datetime()})
         socketio.sleep(1)
         
 def get_current_datetime():
@@ -32,21 +39,19 @@ def get_current_datetime():
     return now.strftime("%m/%d/%Y %H:%M:%S")
 
 
-     
-
-@socketio.on('connect')
-def connect():
-    global thread
-    print('Client connected')
-
-    global thread
-    with thread_lock:
-        if thread is None:
-            thread = socketio.start_background_task(background_thread)
+def thread_For_Cpu_times():
+    
+    while rule == '/cpuTimes':
+        times = psutil.cpu_times_percent().user
+        print("cputime")
+        socketio.emit('cputime', {'val':times, "dt":get_current_datetime()})
+        socketio.sleep(1)
+ 
 
 @socketio.on('disconnect')
 def disconnect():
     print('Client disconnected',  request.sid)
+
 
 
 

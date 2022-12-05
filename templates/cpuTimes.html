@@ -18,7 +18,7 @@
           <a class="nav-link active" aria-current="page" href="/">Home</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/cpuTimes">cpuTimes</a>
+          <a class="nav-link" href="/cpuTimes">Features</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="#">Pricing</a>
@@ -32,7 +32,7 @@
 </nav>
 
 <div class="chart-wrapper">
-	<h4>Cpu Percent</h4>
+	<h4>Cpu Times</h4>
     <canvas id="myChart"></canvas>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -65,7 +65,7 @@
   const myChart = new Chart(ctx, {
     type: "line",
     data: {
-      datasets: [{ label: "Cpu Percent",  }],
+      datasets: [{ label: "Cpu Times",  }],
     },
     options: {
       borderWidth: 3,
@@ -91,24 +91,20 @@
   const MAX_DATA_COUNT = 10;
   //connect to the socket server.
   //   var socket = io.connect("http://" + document.domain + ":" + location.port);
-  namespace = '/';
+   namespace = '/cpuTimes';
   var socket = io();
 
   //receive details from server
-  socket.on("updateSensorData", function (msg) {
-   // console.log("Received sensorData :: " + msg.date + " :: " + msg.value);
-
-
-    // Show only MAX_DATA_COUNT data
+  socket.on("cputime", function (msg) {
+   
     if (myChart.data.labels.length > MAX_DATA_COUNT) {
       removeFirstData();
     }
-    addData(msg.date, msg.value);
+    addData(msg.dt, msg.val);
   });
 
 
-    // Show only MAX_DATA_COUNT data
-
+  
 
 
 

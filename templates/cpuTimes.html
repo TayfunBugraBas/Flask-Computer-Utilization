@@ -34,6 +34,7 @@
 <div class="chart-wrapper">
 	<h4>Cpu Times</h4>
     <canvas id="myChart"></canvas>
+    <button type="button" class="btn btn-secondary" id="cpuTimeUser">Start Live Data</button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 
@@ -59,6 +60,15 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.esm.min.js" integrity="sha512-UXYQIpmGm5/hzILMeW82BafZSqnAknJNzDcdF8zFC4DeVv2mTUr5wCZ8C2klsvvYOwNNWWixZ9cAS6/mRQoL6A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
  <script>
+  
+   $(document).ready(function() {
+    
+
+    $('#cpuTimeUser').on('click', function() {
+        socket.emit('cpuTimeButton');
+    });
+});
+
  
   const ctx = document.getElementById("myChart");
 

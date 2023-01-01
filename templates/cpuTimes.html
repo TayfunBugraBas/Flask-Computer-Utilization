@@ -15,16 +15,16 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <a class="nav-link active" aria-current="page" href="/">Home</a>
+          <a class="nav-link active" aria-current="page" href="/">Cpu Percent</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/cpuTimes">Features</a>
+          <a class="nav-link" href="/cpuTimes">Cpu Times</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Pricing</a>
+          <a class="nav-link" href="/diskiocounters">Disk IO counters</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link disabled">Disabled</a>
+          <a class="nav-link" href="/diskUsages">Disk Usages</a>
         </li>
       </ul>
     </div>
@@ -66,6 +66,8 @@
 
     $('#cpuTimeUser').on('click', function() {
         socket.emit('cpuTimeButton');
+        const box = document.getElementById('cpuTimeButton');
+        box.style.display = 'none';
     });
 });
 
@@ -75,7 +77,41 @@
   const myChart = new Chart(ctx, {
     type: "line",
     data: {
-      datasets: [{ label: "Cpu Times",  }],
+      datasets: [{ label: "Cpu Time User",  
+
+  },
+  { label: "Cpu Time System",
+  fill: true,
+  backgroundColor: 'rgba(38,125,60,0.3)',  
+  borderColor: 'rgba(38,125,60,0.3)',
+  tension:0.5
+
+  },
+  { label: "Cpu Time Idle",  
+
+  fill: false,
+  backgroundColor: 'rgba(1,39,241,0.5)',  
+  borderColor: 'rgba(1,39,241,0.5)',
+  tension:0.5,
+  borderDash: [5,5]
+
+  },
+  { label: "Cpu Time Interrupt",  
+  backgroundColor: 'rgba(243,246,19,0.5)',  
+  borderColor: 'rgba(243,246,19,0.5)',
+ 
+
+  },
+  { label: "Cpu Time Dpc",  
+  backgroundColor: 'rgba(211,19,246,0.5)',  
+  borderColor: 'rgba(211,19,246,0.5)',
+
+  },
+
+
+
+
+      ],
     },
     options: {
       borderWidth: 3,
@@ -83,11 +119,26 @@
     },
   });
 
-  function addData(label, data) {
-    myChart.data.labels.push(label);
-    myChart.data.datasets.forEach((dataset) => {
-      dataset.data.push(data);
-    });
+  function addData1(label, data) {
+    myChart.data.labels.push(label); 
+    myChart.data.datasets[0].data.push(data);
+    myChart.update();
+  }
+
+  function addData2(data) {
+    myChart.data.datasets[1].data.push(data);
+    myChart.update();
+  }
+  function addData3(data) {
+    myChart.data.datasets[2].data.push(data);
+    myChart.update();
+  }
+  function addData4(data) {
+    myChart.data.datasets[3].data.push(data);
+    myChart.update();
+  }
+  function addData5(data) {
+    myChart.data.datasets[4].data.push(data);
     myChart.update();
   }
 
@@ -110,7 +161,11 @@
     if (myChart.data.labels.length > MAX_DATA_COUNT) {
       removeFirstData();
     }
-    addData(msg.dt, msg.val);
+    addData1(msg.dt, msg.valUsr);
+    addData2(msg.valSys);
+    addData3(msg.valIdl);
+    addData4(msg.valIntr);
+    addData5(msg.valDpc);
   });
 
 

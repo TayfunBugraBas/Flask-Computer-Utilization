@@ -18,23 +18,25 @@
           <a class="nav-link active" aria-current="page" href="/">Cpu Percent</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/cpuTimes">cpuTimes</a>
+          <a class="nav-link" href="/cpuTimes">Cpu Times</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/diskiocounters">Disk IO counters</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="/diskUsages">Disk Usages</a>
-        </li>
+            <a class="nav-link" href="/diskUsages">Disk Usages</a>
+          </li>
       </ul>
     </div>
   </div>
 </nav>
 
 <div class="chart-wrapper">
-	<h4>Cpu Percent</h4>
+	<h4>Disk IO Counters</h4>
+    <button type="button" class="btn btn-secondary" id="diskio">Start Live Data</button>
     <canvas id="myChart"></canvas>
-    <button type="button" class="btn btn-secondary" id ="cpuPercentButton">Start Live Data</button>
+    <br>
+    <canvas id="myChart2"></canvas>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 
@@ -60,22 +62,35 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.5.4/socket.io.esm.min.js" integrity="sha512-UXYQIpmGm5/hzILMeW82BafZSqnAknJNzDcdF8zFC4DeVv2mTUr5wCZ8C2klsvvYOwNNWWixZ9cAS6/mRQoL6A==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
  <script>
- $(document).ready(function() {
+  
+   $(document).ready(function() {
     
 
-    $('#cpuPercentButton').on('click', function() {
-        socket.emit('cpuPercentButton');
-        const box = document.getElementById('cpuPercentButton');
+    $('#diskio').on('click', function() {
+        socket.emit('diskio');
+        const box = document.getElementById('diskio');
         box.style.display = 'none';
     });
 });
+
  
   const ctx = document.getElementById("myChart");
 
   const myChart = new Chart(ctx, {
-    type: "line",
+    type: "bar",
     data: {
-      datasets: [{ label: "Cpu Percent",  }],
+      datasets: [{ label: "Read count",  
+     fill:true
+  },
+  { label: "Write Count",
+  fill: true,
+  backgroundColor: 'rgba(255,102,0,1)',  
+  borderColor: 'rgba(255,102,0,1)',
+  tension:0.5
+
+  },
+
+      ],
     },
     options: {
       borderWidth: 3,
@@ -83,13 +98,17 @@
     },
   });
 
-  function addData(label, data) {
-    myChart.data.labels.push(label);
-    myChart.data.datasets.forEach((dataset) => {
-      dataset.data.push(data);
-    });
+  function addData1(label, data) {
+    myChart.data.labels.push(label); 
+    myChart.data.datasets[0].data.push(data);
     myChart.update();
   }
+
+  function addData2(data) {
+    myChart.data.datasets[1].data.push(data);
+    myChart.update();
+  }
+
 
   function removeFirstData() {
     myChart.data.labels.splice(0, 1);
@@ -101,30 +120,120 @@
   const MAX_DATA_COUNT = 10;
   //connect to the socket server.
   //   var socket = io.connect("http://" + document.domain + ":" + location.port);
-  namespace = '/';
+   namespace = '/diskiocounters';
   var socket = io();
 
   //receive details from server
-  socket.on("updateSensorData", function (msg) {
-   // console.log("Received sensorData :: " + msg.date + " :: " + msg.value);
+  socket.on("diskiocount", function (msg) {
 
-
-    // Show only MAX_DATA_COUNT data
+   
     if (myChart.data.labels.length > MAX_DATA_COUNT) {
       removeFirstData();
     }
-    addData(msg.date, msg.value);
+    addData1(msg.dt,msg.rdCT);
+    addData2(msg.wrCT);
+    
   });
 
 
-    // Show only MAX_DATA_COUNT data
+  
 
+
+
+        </script>
+
+<!--second chart-->
+
+
+<script>
+
+const ctx2 = document.getElementById("myChart2");
+
+  const myChart2 = new Chart(ctx2, {
+    type: "bar",
+    data: {
+      datasets: [
+  { label: "Read Bytes",  
+
+  
+  backgroundColor: 'rgba(120,39,241,1)',  
+  borderColor: 'rgba(120,39,241,1)',
+
+
+  },
+  { label: "Write Bytes",  
+  backgroundColor: 'rgba(156,131,228,1)',  
+  borderColor: 'rgba(156,131,228,1)',
+ 
+
+  },
+
+
+
+
+      ],
+    },
+    options: {
+      borderWidth: 3,
+      borderColor: ['rgba(255, 99, 132, 1)',],
+      scales: {
+            x: {
+                stacked: true
+            },
+            y: {
+                stacked: true
+            }
+        }
+      
+    },
+  });
+
+  function addData12(label, data) {
+    myChart2.data.labels.push(label); 
+    myChart2.data.datasets[0].data.push(data);
+    myChart2.update();
+  }
+
+  function addData22(data) {
+    myChart2.data.datasets[1].data.push(data);
+    myChart2.update();
+  }
+
+
+  function removeFirstData2() {
+    myChart2.data.labels.splice(0, 1);
+    myChart2.data.datasets.forEach((dataset) => {
+      dataset.data.shift();
+    });
+  }
+
+  const MAX_DATA_COUNTa = 10;
+  //connect to the socket server.
+  //   var socket = io.connect("http://" + document.domain + ":" + location.port);
+   namespace = '/diskiocounters';
+  var socket = io();
+
+  //receive details from server
+  socket.on("diskiocount", function (msg) {
+   
+    if (myChart2.data.labels.length > MAX_DATA_COUNTa) {
+      removeFirstData2();
+    }
+    addData12(msg.dt,msg.rdBY);
+    addData22(msg.wrBY);
+    
+  });
+
+
+  
 
 
 
         </script>
 
 
+
+</script>
 
 
 

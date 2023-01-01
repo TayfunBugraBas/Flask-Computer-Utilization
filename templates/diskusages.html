@@ -32,9 +32,9 @@
 </nav>
 
 <div class="chart-wrapper">
-	<h4>Cpu Percent</h4>
+	<h4>Disk Usages</h4>
     <canvas id="myChart"></canvas>
-    <button type="button" class="btn btn-secondary" id ="cpuPercentButton">Start Live Data</button>
+    <button type="button" class="btn btn-secondary" id ="diskUsageButton">Start Live Data</button>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 
@@ -47,8 +47,8 @@
 	.chart-wrapper {
     margin: auto;
     position: relative;
-    width: 65%;
-    height: 65%;
+    width: 55%;
+    height: 55%;
 
 
 }
@@ -63,19 +63,44 @@
  $(document).ready(function() {
     
 
-    $('#cpuPercentButton').on('click', function() {
-        socket.emit('cpuPercentButton');
-        const box = document.getElementById('cpuPercentButton');
+    $('#diskUsageButton').on('click', function() {
+        socket.emit('diskUsageButton');
+        const box = document.getElementById('diskUsageButton');
         box.style.display = 'none';
     });
 });
  
   const ctx = document.getElementById("myChart");
-
+  const labels = ['Used','Free' , 'Total'];
   const myChart = new Chart(ctx, {
-    type: "line",
+    type: "polarArea",
+    
     data: {
-      datasets: [{ label: "Cpu Percent",  }],
+      labels: labels,
+      datasets: [
+    { label: "Disk Usages",  
+    backgroundColor:[
+        'rgba(255,0,0,0.5)',
+        'rgba(255,247,32,0.5)',
+        'rgba(0,0,255,0.5)',
+
+
+
+    ],
+    borderColor:[
+        'rgba(255,0,0,0.5)',
+        'rgba(255,247,32,0.5)',
+        'rgba(0,0,255,0.5)',
+
+
+
+    ],
+    
+    },
+
+
+
+],
     },
     options: {
       borderWidth: 3,
@@ -84,12 +109,21 @@
   });
 
   function addData(label, data) {
-    myChart.data.labels.push(label);
+   
     myChart.data.datasets.forEach((dataset) => {
       dataset.data.push(data);
     });
     myChart.update();
   }
+
+  function addData2(data) {
+   
+    myChart.data.datasets.forEach((dataset) => {
+      dataset.data.push(data);
+    });
+    myChart.update();
+  }
+
 
   function removeFirstData() {
     myChart.data.labels.splice(0, 1);
@@ -105,15 +139,17 @@
   var socket = io();
 
   //receive details from server
-  socket.on("updateSensorData", function (msg) {
+  socket.on("diskUsg", function (msg) {
    // console.log("Received sensorData :: " + msg.date + " :: " + msg.value);
 
 
     // Show only MAX_DATA_COUNT data
     if (myChart.data.labels.length > MAX_DATA_COUNT) {
-      removeFirstData();
+      
     }
-    addData(msg.date, msg.value);
+    addData(msg.date, msg.Used); // used  disk
+    addData2(msg.Free); // free  disk
+    addData2(msg.Total); // total disk
   });
 
 
